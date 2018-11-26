@@ -11,8 +11,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import KFold
-from sklearn.metrics import confusion_matrix, f1_score, accuracy_score
+from sklearn.model_selection import KFold, GridSearchCV
+from sklearn.metrics import confusion_matrix, f1_score, accuracy_score, make_scorer
 from sklearn.tree import DecisionTreeClassifier
 from nltk.stem.snowball import EnglishStemmer
 
@@ -118,3 +118,25 @@ stem_vectorizer = TfidfVectorizer(analyzer=stemmed_words, ngram_range=(1, 2))
 do_classify("LogisticRegression", LogisticRegression(solver='liblinear'))
 do_classify("LogisticRegression", LogisticRegression(solver='liblinear'), TfidfVectorizer(ngram_range=(1, 2)))
 do_classify("LogisticRegression", LogisticRegression(solver='liblinear'), stem_vectorizer)
+
+# Choose the type of classifier.
+clf = Pipeline([('tfidf', TfidfVectorizer()), ('lr', LogisticRegression(solver='liblinear'))])
+
+# Choose some parameter combinations to try
+parameters = {'lr__C': (0.01, 0.1, 1.0, 10.0, 100.0)}
+
+# Type of scoring used to compare parameter combinations
+acc_scorer = make_scorer(accuracy_score)
+
+# Run the grid search
+grid_obj = GridSearchCV(clf, parameters, scoring=acc_scorer)
+grid_obj = grid_obj.fit(train['text'], train['class'])
+
+# Set the clf to the best combination of parameters
+clf = grid_obj.best_estimator_
+
+# 打印最佳的参数
+print(grid_obj.best_estimator_.get_params())
+# 用最佳方案预测结果
+predicted = clf.predict(test['text'])
+print("   accuracy: ", np.mean(predicted == test['class']))
