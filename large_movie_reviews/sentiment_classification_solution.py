@@ -6,8 +6,8 @@ from os import listdir
 from os.path import join
 
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
@@ -105,20 +105,20 @@ def do_classify(tag, classifier, vectorizer=TfidfVectorizer()):
 # do_classify("AdaBoostClassifier", AdaBoostClassifier())
 # do_classify("DecisionTreeClassifier", DecisionTreeClassifier())
 
-stemmer = EnglishStemmer()
-analyzer = TfidfVectorizer().build_analyzer()
-
-
-def stemmed_words(doc):
-    return (stemmer.stem(w) for w in analyzer(doc))
-
-
-stem_vectorizer = TfidfVectorizer(analyzer=stemmed_words, ngram_range=(1, 2))
-
-do_classify("LogisticRegression", LogisticRegression(solver='liblinear'))
-do_classify("LogisticRegression", LogisticRegression(solver='liblinear'), TfidfVectorizer(ngram_range=(1, 2)))
-do_classify("LogisticRegression", LogisticRegression(solver='liblinear'), stem_vectorizer)
-
+# stemmer = EnglishStemmer()
+# analyzer = TfidfVectorizer().build_analyzer()
+#
+#
+# def stemmed_words(doc):
+#     return (stemmer.stem(w) for w in analyzer(doc))
+#
+#
+# stem_vectorizer = TfidfVectorizer(analyzer=stemmed_words, ngram_range=(1, 2))
+#
+# do_classify("LogisticRegression", LogisticRegression(solver='liblinear'))
+# do_classify("LogisticRegression", LogisticRegression(solver='liblinear'), TfidfVectorizer(ngram_range=(1, 2)))
+# do_classify("LogisticRegression", LogisticRegression(solver='liblinear'), stem_vectorizer)
+#
 # Choose the type of classifier.
 clf = Pipeline([('tfidf', TfidfVectorizer()), ('lr', LogisticRegression(solver='liblinear'))])
 

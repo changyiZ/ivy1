@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import plotly.offline as py
 import seaborn as sns
+import numpy as np
 
 py.init_notebook_mode(connected=True)
 
@@ -9,7 +10,7 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-from sklearn import preprocessing
+from sklearn import preprocessing, svm
 from sklearn.model_selection import train_test_split
 from sklearn import tree
 from sklearn.ensemble import RandomForestClassifier
@@ -40,15 +41,14 @@ print(df.loc[index])
 df = df.drop(index)
 printInfos('Rating')
 
-
-def visualFeatureCounting(feature):
-    g = sns.countplot(x=feature, data=df, palette="Set1")
-    g.set_xticklabels(g.get_xticklabels(), rotation=90, ha="right")
-    g
-    plt.title('Count of app in each ' + feature, size=20)
-
-
-visualFeatureCounting('Rating')
+# def visualFeatureCounting(feature):
+#     g = sns.countplot(x=feature, data=df, palette="Set1")
+#     g.set_xticklabels(g.get_xticklabels(), rotation=90, ha="right")
+#     g
+#     plt.title('Count of app in each ' + feature, size=20)
+#
+#
+# visualFeatureCounting('Rating')
 
 # Removing NaN values
 df = df[pd.notnull(df['Last Updated'])]
@@ -100,7 +100,8 @@ df['Reviews'] = df['Reviews'].map(map_reviews)
 
 printInfos('Reviews')
 
-visualFeatureCounting('Reviews')
+
+# visualFeatureCounting('Reviews')
 
 
 # scaling and cleaning size of installation
@@ -127,7 +128,7 @@ df['Size'] = df['Size'].map(map_size)
 
 printInfos('Size')
 
-visualFeatureCounting('Size')
+# visualFeatureCounting('Size')
 
 printInfos('Android Ver')
 
@@ -158,7 +159,7 @@ def map_version(version):
 df['Android Ver'] = df['Android Ver'].map(map_version)
 
 printInfos('Android Ver')
-visualFeatureCounting('Android Ver')
+# visualFeatureCounting('Android Ver')
 
 # get_dummies creates a new dataframe which consists of zeros and ones
 df['App'] = pd.get_dummies(df['App'])
@@ -188,7 +189,7 @@ df['Installs'] = df['Installs'].map(map_installs)
 
 printInfos('Installs')
 
-visualFeatureCounting('Installs')
+# visualFeatureCounting('Installs')
 
 X_all = df.drop(['Installs', 'Type', 'Current Ver', 'Genres'], axis=1)
 y_all = df['Installs']
@@ -201,52 +202,114 @@ clf.fit(X_train, y_train)
 predictions = clf.predict(X_test)
 print(accuracy_score(y_test, predictions))
 
-# Choose the type of classifier.
-clf = RandomForestClassifier()
+# # Choose the type of classifier.
+# clf = RandomForestClassifier()
+#
+# # Choose some parameter combinations to try
+# parameters = {'n_estimators': [4, 6, 9],
+#               'max_features': ['log2', 'sqrt', 'auto'],
+#               'criterion': ['entropy', 'gini'],
+#               'max_depth': [2, 3, 5, 10],
+#               'min_samples_split': [2, 3, 5],
+#               'min_samples_leaf': [1, 5, 8]
+#               }
+#
+# # Type of scoring used to compare parameter combinations
+# acc_scorer = make_scorer(accuracy_score)
+#
+# # Run the grid search
+# grid_obj = GridSearchCV(clf, parameters, scoring=acc_scorer)
+# grid_obj = grid_obj.fit(X_train, y_train)
+#
+# # Set the clf to the best combination of parameters
+# clf = grid_obj.best_estimator_
+#
+# # Fit the best algorithm to the data.
+# clf.fit(X_train, y_train)
+#
+# predictions = clf.predict(X_test)
+# print(accuracy_score(y_test, predictions))
+#
+# clf = AdaBoostClassifier(n_estimators=100)
+#
+# # Choose some parameter combinations to try
+# parameters = {'n_estimators': [4, 6, 9],
+#               'algorithm': ['SAMME', 'SAMME.R']}
+#
+# # Type of scoring used to compare parameter combinations
+# acc_scorer = make_scorer(accuracy_score)
+#
+# # Run the grid search
+# grid_obj = GridSearchCV(clf, parameters, scoring=acc_scorer)
+# grid_obj = grid_obj.fit(X_train, y_train)
+#
+# # Set the clf to the best combination of parameters
+# clf = grid_obj.best_estimator_
+#
+# # Fit the best algorithm to the data.
+# clf.fit(X_train, y_train)
+#
+# predictions = clf.predict(X_test)
+# print(accuracy_score(y_test, predictions))
 
-# Choose some parameter combinations to try
-parameters = {'n_estimators': [4, 6, 9],
-              'max_features': ['log2', 'sqrt', 'auto'],
-              'criterion': ['entropy', 'gini'],
-              'max_depth': [2, 3, 5, 10],
-              'min_samples_split': [2, 3, 5],
-              'min_samples_leaf': [1, 5, 8]
-              }
+
+from sklearn.metrics import classification_report
+from sklearn.svm import SVC
+
+kernels = ['linear', 'rbf', 'poly']
+for kernel in kernels:
+    svc = svm.SVC(kernel=kernel).fit(X_train, y_train)
+    predictions = clf.predict(X_test)
+    print(accuracy_score(y_test, predictions))
+
+
+# Set the parameters by cross-validation
+tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
+                     'C': [1, 10, 100, 1000]},
+                    {'kernel': ['linear'], 'C': [1, 10, 100, 1000]},
+                    {'kernel': ['poly'], 'degree': [0, 1, 2, 3, 4, 5, 6]}]
 
 # Type of scoring used to compare parameter combinations
 acc_scorer = make_scorer(accuracy_score)
 
-# Run the grid search
-grid_obj = GridSearchCV(clf, parameters, scoring=acc_scorer)
-grid_obj = grid_obj.fit(X_train, y_train)
-
-# Set the clf to the best combination of parameters
-clf = grid_obj.best_estimator_
-
-# Fit the best algorithm to the data.
+clf = GridSearchCV(SVC(), tuned_parameters, cv=5, scoring=acc_scorer)
 clf.fit(X_train, y_train)
+
+print("Best parameters set found on development set:")
+print()
+print(clf.best_params_)
 
 predictions = clf.predict(X_test)
 print(accuracy_score(y_test, predictions))
 
-clf = AdaBoostClassifier(n_estimators=100)
-
-# Choose some parameter combinations to try
-parameters = {'n_estimators': [4, 6, 9],
-              'algorithm': ['SAMME', 'SAMME.R']}
-
-# Type of scoring used to compare parameter combinations
-acc_scorer = make_scorer(accuracy_score)
-
-# Run the grid search
-grid_obj = GridSearchCV(clf, parameters, scoring=acc_scorer)
-grid_obj = grid_obj.fit(X_train, y_train)
-
-# Set the clf to the best combination of parameters
-clf = grid_obj.best_estimator_
-
-# Fit the best algorithm to the data.
-clf.fit(X_train, y_train)
-
-predictions = clf.predict(X_test)
-print(accuracy_score(y_test, predictions))
+# scores = ['precision', 'recall']
+#
+# for score in scores:
+#     print("# Tuning hyper-parameters for %s" % score)
+#     print()
+#
+#     clf = GridSearchCV(SVC(), tuned_parameters, cv=5,
+#                        scoring='%s_macro' % score)
+#     clf.fit(X_train, y_train)
+#
+#     print("Best parameters set found on development set:")
+#     print()
+#     print(clf.best_params_)
+#     print()
+#     print("Grid scores on development set:")
+#     print()
+#     means = clf.cv_results_['mean_test_score']
+#     stds = clf.cv_results_['std_test_score']
+#     for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+#         print("%0.3f (+/-%0.03f) for %r"
+#               % (mean, std * 2, params))
+#     print()
+#
+#     print("Detailed classification report:")
+#     print()
+#     print("The model is trained on the full development set.")
+#     print("The scores are computed on the full evaluation set.")
+#     print()
+#     y_true, y_pred = y_test, clf.predict(X_test)
+#     print(classification_report(y_true, y_pred))
+#     print()
