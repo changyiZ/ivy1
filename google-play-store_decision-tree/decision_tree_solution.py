@@ -175,12 +175,10 @@ df['Price'] = df['Price'].apply(lambda x: x.strip('$'))
 
 def map_installs(number):
     number = int(number)
-    if number < 1000000:
+    if number < 10000000:
         return 0
-    elif number < 10000000:
-        return 1
     else:
-        return 2
+        return 1
 
 
 # Installs cealning
@@ -256,31 +254,55 @@ print(accuracy_score(y_test, predictions))
 from sklearn.metrics import classification_report
 from sklearn.svm import SVC
 
-kernels = ['linear', 'rbf', 'poly']
-for kernel in kernels:
-    svc = svm.SVC(kernel=kernel).fit(X_train, y_train)
-    predictions = clf.predict(X_test)
-    print(accuracy_score(y_test, predictions))
+# kernels = ['linear', 'rbf', 'poly']
+# for kernel in kernels:
+#     clf = svm.SVC(kernel=kernel).fit(X_train, y_train)
+#     predictions = clf.predict(X_test)
+#     print(kernel, accuracy_score(y_test, predictions))
 
+
+# def svc_param_selection(X, y, nfolds):
+#     Cs = [0.001, 0.01, 0.1, 1, 10]
+#     gammas = [0.001, 0.01, 0.1, 1]
+#     param_grid = {'C': Cs, 'gamma': gammas}
+#     grid_search = GridSearchCV(svm.SVC(kernel='rbf'), param_grid, cv=nfolds)
+#     grid_search.fit(X, y)
+#     grid_search.best_params_
+#     return grid_search.best_params_
 
 # Set the parameters by cross-validation
-tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
-                     'C': [1, 10, 100, 1000]},
-                    {'kernel': ['linear'], 'C': [1, 10, 100, 1000]},
-                    {'kernel': ['poly'], 'degree': [0, 1, 2, 3, 4, 5, 6]}]
+Cs = [0.001, 0.01, 0.1, 1, 10]
+gammas = [0.001, 0.01, 0.1, 1]
+
+tuned_parameters = [
+    {'kernel': ['linear'], 'C': Cs},
+    {'kernel': ['rbf'], 'gamma': gammas, 'C': Cs}
+    # {'kernel': ['poly'], 'degree': [0, 1, 2, 3, 4, 5, 6]}
+]
 
 # Type of scoring used to compare parameter combinations
 acc_scorer = make_scorer(accuracy_score)
 
-clf = GridSearchCV(SVC(), tuned_parameters, cv=5, scoring=acc_scorer)
+clf = GridSearchCV(svm.SVC(), tuned_parameters, scoring=acc_scorer)
 clf.fit(X_train, y_train)
 
 print("Best parameters set found on development set:")
 print()
 print(clf.best_params_)
 
+# Set the clf to the best combination of parameters
+clf = clf.best_estimator_
+
 predictions = clf.predict(X_test)
 print(accuracy_score(y_test, predictions))
+
+degrees = [0, 1, 2, 3, 4, 5, 6]
+for degree in degrees:
+    clf = svm.SVC(kernel='poly', degree=degree)
+    clf.fit(X_train, y_train)
+    predictions = clf.predict(X_test)
+    print('Poly with degree:', degree, accuracy_score(y_test, predictions))
+
 
 # scores = ['precision', 'recall']
 #
