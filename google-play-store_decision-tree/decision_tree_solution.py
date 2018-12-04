@@ -21,15 +21,13 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-
-
 df = pd.read_csv('data/googleplaystore.csv')
 print('Number of apps in the dataset : ', len(df))
 df.sample(10)
 
 
 # 打印某个属性的分布信息
-def printInfos(feature):
+def print_info(feature):
     print(len(df[feature].unique()), feature)
     print("\n", df[feature].unique())
 
@@ -38,13 +36,13 @@ def printInfos(feature):
 df.info()
 
 df['Rating'] = df['Rating'].fillna(df['Rating'].median())
-printInfos('Rating')
+print_info('Rating')
 
 index = df[df['Rating'] == 19.].index
 print(df.loc[index])
 
 df = df.drop(index)
-printInfos('Rating')
+print_info('Rating')
 
 # def visualFeatureCounting(feature):
 #     g = sns.countplot(x=feature, data=df, palette="Set1")
@@ -60,7 +58,7 @@ df = df[pd.notnull(df['Last Updated'])]
 df = df[pd.notnull(df['Content Rating'])]
 df.info()
 
-printInfos('Content Rating')
+print_info('Content Rating')
 
 
 def map_content_rating(content_rating):
@@ -78,7 +76,7 @@ def map_content_rating(content_rating):
 
 # Encode Content Rating features
 df['Content Rating'] = df['Content Rating'].map(map_content_rating)
-printInfos('Content Rating')
+print_info('Content Rating')
 
 
 def map_reviews(number):
@@ -103,7 +101,7 @@ def map_reviews(number):
 
 df['Reviews'] = df['Reviews'].map(map_reviews)
 
-printInfos('Reviews')
+print_info('Reviews')
 
 
 # visualFeatureCounting('Reviews')
@@ -131,11 +129,11 @@ def map_size(size):
 
 df['Size'] = df['Size'].map(map_size)
 
-printInfos('Size')
+print_info('Size')
 
 # visualFeatureCounting('Size')
 
-printInfos('Android Ver')
+print_info('Android Ver')
 
 
 # scaling and cleaning size of installation
@@ -163,7 +161,7 @@ def map_version(version):
 
 df['Android Ver'] = df['Android Ver'].map(map_version)
 
-printInfos('Android Ver')
+print_info('Android Ver')
 # visualFeatureCounting('Android Ver')
 
 # get_dummies creates a new dataframe which consists of zeros and ones
@@ -192,7 +190,7 @@ def map_installs(number):
 df['Installs'] = df['Installs'].apply(lambda x: x.strip('+').replace(',', ''))
 df['Installs'] = df['Installs'].map(map_installs)
 
-printInfos('Installs')
+print_info('Installs')
 
 # visualFeatureCounting('Installs')
 
@@ -322,7 +320,6 @@ for degree in degrees:
     clf.fit(X_train, y_train)
     predictions = clf.predict(X_test)
     print('Poly with degree:', degree, accuracy_score(y_test, predictions))
-
 
 # scores = ['precision', 'recall']
 #
