@@ -18,6 +18,11 @@ from sklearn.metrics import make_scorer, accuracy_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import AdaBoostClassifier
 
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+
+
+
 df = pd.read_csv('data/googleplaystore.csv')
 print('Number of apps in the dataset : ', len(df))
 df.sample(10)
@@ -175,10 +180,12 @@ df['Price'] = df['Price'].apply(lambda x: x.strip('$'))
 
 def map_installs(number):
     number = int(number)
-    if number < 10000000:
+    if number < 1000000:
         return 0
-    else:
+    elif number < 10000000:
         return 1
+    else:
+        return 2
 
 
 # Installs cealning
@@ -191,6 +198,13 @@ printInfos('Installs')
 
 X_all = df.drop(['Installs', 'Type', 'Current Ver', 'Genres'], axis=1)
 y_all = df['Installs']
+
+print('origin: ')
+print(X_all.sample(5))
+x_scaled = StandardScaler().fit_transform(X_all.values)
+X_all = pd.DataFrame(x_scaled)
+print('scale: ')
+print(X_all.sample(5))
 
 X_train, X_test, y_train, y_test = train_test_split(X_all, y_all, test_size=0.20, random_state=10)
 
@@ -270,12 +284,18 @@ from sklearn.svm import SVC
 #     grid_search.best_params_
 #     return grid_search.best_params_
 
+
+clf = Pipeline([('scaler', StandardScaler()), ('svm', svm.SVC(kernel='rbf', gamma='scale'))])
+clf.fit(X_train, y_train)
+predictions = clf.predict(X_test)
+print(accuracy_score(y_test, predictions))
+
 # Set the parameters by cross-validation
 Cs = [0.001, 0.01, 0.1, 1, 10]
 gammas = [0.001, 0.01, 0.1, 1]
 
 tuned_parameters = [
-    {'kernel': ['linear'], 'C': Cs},
+    # {'svm__kernel': ['linear'], 'svm__C': Cs},
     {'kernel': ['rbf'], 'gamma': gammas, 'C': Cs}
     # {'kernel': ['poly'], 'degree': [0, 1, 2, 3, 4, 5, 6]}
 ]
