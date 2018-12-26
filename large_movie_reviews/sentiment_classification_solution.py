@@ -14,7 +14,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import KFold, GridSearchCV
 from sklearn.metrics import confusion_matrix, f1_score, accuracy_score, make_scorer
 from sklearn.tree import DecisionTreeClassifier
-from nltk.stem.snowball import EnglishStemmer
 
 
 def read_text(path):
