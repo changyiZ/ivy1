@@ -1,6 +1,7 @@
 import datetime
 
 import numpy as np
+import pandas as pd
 from pandas import DataFrame
 from os import listdir
 from os.path import join
@@ -32,7 +33,7 @@ def build_data_frame(path, classification):
         rows.append({'text': text, 'class': classification})
         index.append(file_name)
 
-    data_frame = DataFrame(rows, index=index)
+    data_frame = DataFrame(rows)
     return data_frame
 
 
@@ -48,7 +49,9 @@ train = DataFrame({'text': [], 'class': []})
 for path, classification in SOURCES:
     train = train.append(build_data_frame(path, classification))
 
-train = train.reindex(np.random.permutation(train.index))
+from sklearn.utils import shuffle
+train = shuffle(train)
+
 print(train.sample(10))
 
 # k_fold = KFold(n_splits=6)
@@ -81,6 +84,12 @@ TEST_SOURCES = [
 test = DataFrame({'text': [], 'class': []})
 for path, classification in TEST_SOURCES:
     test = test.append(build_data_frame(path, classification))
+
+
+frames = [train, test]
+pd.concat(frames).to_csv('movie_reviews_full.csv', sep='\t')
+# train.head(11000).to_csv('movie_reviews.csv', sep='\t')
+print('csv generated...')
 
 
 def do_classify(tag, classifier, vectorizer=TfidfVectorizer()):
