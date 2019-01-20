@@ -5,7 +5,7 @@ from keras.applications import inception_v3
 
 def image_processing(path):
     # Load the image file and convert it to a numpy array
-    img = image.load_img(path, target_size=(299, 299))
+    img = image.load_img(path, target_size=(150, 150))
     input_image = image.img_to_array(img)
     # Scale the image so all pixel intensities are between [-1, 1] as the model expects
     input_image /= 255.

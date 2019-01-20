@@ -112,3 +112,5 @@ model.fit_generator(
     epochs=epochs,
     validation_data=validation_generator,
     validation_steps=nb_validation_samples // batch_size)
+
+model.save_weights('first_try.h5')  # always save your weights after training or during training
